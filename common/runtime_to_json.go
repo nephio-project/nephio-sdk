@@ -265,7 +265,7 @@ func (obj *RuntimeJsonConverter) Convert(runtimeObj runtime.Object, gvk schema.G
 	if jsonErr != nil {
 		return jsonErr
 	}
-	createDirIfDontExist("temp")
-	err := os.WriteFile("temp/temp.json", jsonString, 0777)
+	_ = createDirIfDontExist("temp")
+	err := os.WriteFile("temp/temp.json", jsonString, 0600)
 	return err
 }

@@ -22,6 +22,7 @@ import (
 	"helm_to_controller/packages/common"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	// logging "github.com/op/go-logging"
@@ -72,16 +73,16 @@ Output:
 	unstructObjList: List of unstructured Objects Converted from the input yaml, whose Kind are not default to kubernetes| Third Party Kinds
 	unstructGvkList: List of Group-Version-Kind for the unstructured objects of unstructObjList, mapped Index-wise
 */
-func handleSingleYaml(filepath string) (runtimeObjList []runtime.Object, gvkList []schema.GroupVersionKind, unstructObjList []unstructured.Unstructured, unstructGvkList []schema.GroupVersionKind) {
-	file, err := os.Open(filepath)
+func handleSingleYaml(inputFilepath string) (runtimeObjList []runtime.Object, gvkList []schema.GroupVersionKind, unstructObjList []unstructured.Unstructured, unstructGvkList []schema.GroupVersionKind) {
+	file, err := os.Open(filepath.Clean(inputFilepath))
 	if err != nil {
-		logrus.Error("Error While Opening YAML file | ", filepath, " \t |", err)
+		logrus.Error("Error While Opening YAML file | ", inputFilepath, " \t |", err)
 		return
 	}
 	fp := bufio.NewReader(file)
 	data, err := io.ReadAll(fp)
 	if err != nil {
-		logrus.Error("Error While Reading YAML file | ", filepath, " \t |", err)
+		logrus.Error("Error While Reading YAML file | ", inputFilepath, " \t |", err)
 		return
 	}
 	// A Single yaml can contain muliple KRM reosurces, separated by ---, Therefore Spliting the yaml-file-content over "---" to get single  KRM Resource
@@ -117,8 +118,8 @@ func handleSingleYaml(filepath string) (runtimeObjList []runtime.Object, gvkList
 
 func init() {
 	// Setting the Logrus Logging Level
-	lvl := "debug"
-	lvl = "info"
+	// lvl := "debug"
+	lvl := "info"
 	// lvl = "error"
 	ll, err := logrus.ParseLevel(lvl)
 	if err != nil {

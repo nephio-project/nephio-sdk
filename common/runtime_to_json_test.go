@@ -47,8 +47,10 @@ func TestConvert(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to Decode the Yaml| %s", inputFile)
 	}
-	runtimeJsonConverterObj.Convert(runtimeObject, *gvk)
-
+	err = runtimeJsonConverterObj.Convert(runtimeObject, *gvk)
+	if err != nil {
+		t.Errorf("Unable to Convert Runtime-Obj to JSON | Error %v", err)
+	}
 	resultFile := "temp/temp.json"
 	expectedFile := "tests/expected-json/deployment.json"
 	resultData, _ := getFileContents(resultFile)
@@ -56,8 +58,8 @@ func TestConvert(t *testing.T) {
 
 	var result interface{}
 	var expected interface{}
-	json.Unmarshal([]byte(resultData), &result)
-	json.Unmarshal([]byte(expectedData), &expected)
+	_ = json.Unmarshal([]byte(resultData), &result)
+	_ = json.Unmarshal([]byte(expectedData), &expected)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Result Doesn't Matches with Expected| Kindly Check |\n ResultFile %s \t| ExpectedFile %s\n", resultFile, expectedFile)
 	}

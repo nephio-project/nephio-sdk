@@ -42,8 +42,8 @@ func (obj *HelmYamlConvertor) ConvertHelmToYaml() error {
 	if obj.Namespace == "" {
 		obj.Namespace = "default"
 	}
-	cmdStruct := exec.Command("helm", "template", obj.Chartpath, "--namespace", obj.Namespace, "--output-dir", "temp/templated/")
-	stderr, _ := cmdStruct.StderrPipe() // Intialising a Pipe to read error stream
+	cmdStruct := exec.Command("helm", "template", obj.Chartpath, "--namespace", obj.Namespace, "--output-dir", "temp/templated/") // #nosec G204
+	stderr, _ := cmdStruct.StderrPipe()                                                                                           // Intialising a Pipe to read error stream
 	if err := cmdStruct.Start(); err != nil {
 		logrus.Error(err)
 		return err

@@ -309,8 +309,8 @@ func (obj *GoFile) Generate(gocodes map[string][]string) {
 Writes the "output_gocode/generated_code.go" file
 */
 func (obj *GoFile) WriteToFile() {
-	createDirIfDontExist("outputs")
-	err := os.WriteFile("outputs/generated_code.go", []byte(obj.FileContent), 0777)
+	_ = createDirIfDontExist("outputs")
+	err := os.WriteFile("outputs/generated_code.go", []byte(obj.FileContent), 0600)
 	if err != nil {
 		logrus.Fatal("Writing gocode to outputs/generated_code.go FAILED| Error --> | ", err)
 	}

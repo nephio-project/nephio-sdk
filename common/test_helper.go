@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"io"
 	"os"
+	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -34,8 +35,8 @@ type Tests struct {
 /*
 Reads the File from FilePath and returns the file-data
 */
-func getFileContents(filePath string) ([]byte, error) {
-	file, err := os.Open(filePath)
+func getFileContents(inputFilePath string) ([]byte, error) {
+	file, err := os.Open(filepath.Clean(inputFilePath))
 	if err != nil {
 		return nil, err
 	}

@@ -40,7 +40,7 @@ Creates the directory if it  doesn't exist intially
 */
 func createDirIfDontExist(path string) error {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(path, 0777)
+		err := os.Mkdir(path, 0750)
 		if err != nil {
 			log.Println(err)
 			return err

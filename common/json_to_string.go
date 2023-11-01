@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -92,14 +93,14 @@ globalStructMapping Says: Give me any data-type (v1.Deployment) and I will tell 
 This is required, because runtime-Object type if you reflect, will say the datatype as v1.Service or v1.DeploymentSpec,
 whereas in code, we want corev1.Service or appsv1.DeploymentSpec
 */
-func (obj *JsonStringConverter) setModStructMapping(filepath string) {
+func (obj *JsonStringConverter) setModStructMapping(inputFilepath string) {
 
 	out := map[string]string{}
-	plan, _ := os.ReadFile(filepath)
+	plan, _ := os.ReadFile(filepath.Clean(inputFilepath))
 	var data map[string]interface{}
 	err := json.Unmarshal(plan, &data)
 	if err != nil {
-		logrus.Fatal("Cannot unmarshal the json For Struct Mapping | ", filepath, "  Error | ", err)
+		logrus.Fatal("Cannot unmarshal the json For Struct Mapping | ", inputFilepath, "  Error | ", err)
 	}
 
 	// Validating Struct Mapping, Every Mapping value should contain unique values: pending
@@ -129,12 +130,12 @@ func (obj *JsonStringConverter) setModStructMapping(filepath string) {
 	 Enums are needed to handle differently than structs, therefore the below set tells which data-types are enum (non-composite),
 		So, that it could be handled differently (Used by "formatTypeVal" function)
 */
-func (obj *JsonStringConverter) setEnums(filepath string) {
-	fp, _ := os.ReadFile(filepath)
+func (obj *JsonStringConverter) setEnums(inputFilepath string) {
+	fp, _ := os.ReadFile(filepath.Clean(inputFilepath))
 	var data map[string]interface{}
 	err := json.Unmarshal(fp, &data)
 	if err != nil {
-		logrus.Fatal("Cannot unmarshal the json For Enum-Mapping | ", filepath, "  Error | ", err)
+		logrus.Fatal("Cannot unmarshal the json For Enum-Mapping | ", inputFilepath, "  Error | ", err)
 	}
 	var tempSet = set.New[string](comparator.StringComparator, set.WithGoroutineSafe())
 	// Saving to Global Enum Set, so that it could be used by "formatTypeVal" function
@@ -341,9 +342,9 @@ func (obj *JsonStringConverter) traverseJson(v reflect.Value, curObjType string,
 /*
 Reads the temp.json created by runtime_to_json.go and traverse json(DFS Runner) and generates the go-code requried
 */
-func (obj *JsonStringConverter) jsonToGoCode(filepath string) {
+func (obj *JsonStringConverter) jsonToGoCode(inputFilepath string) {
 
-	plan, _ := os.ReadFile(filepath)
+	plan, _ := os.ReadFile(filepath.Clean(inputFilepath))
 	var data map[string]interface{}
 	err := json.Unmarshal(plan, &data)
 	if err != nil {
