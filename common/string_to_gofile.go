@@ -98,7 +98,8 @@ import (
 	"context"
 	"fmt"
 	"time"
-
+	"encoding/base64"
+	
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -159,6 +160,21 @@ func stringPtr(val string) *string {
 	a := val
 	return &a
 }
+
+func getDataForSecret(encodedVal string) []byte {
+	/*
+		Concept: Based on my Understanding, corev1.Secret requires the actual data(not encoded) as secret-Data
+		But in general terms, we put encoded values in secret-data, which make sense (why to write actual value in readable format)
+		This function takes the encodedVal and decodes it and returns
+	*/
+	decodeVal, err := base64.StdEncoding.DecodeString(encodedVal)
+	if err != nil {
+		fmt.Println("Unable to decode the SecretVal ", encodedVal, " || This Secret Will Probably would give error during deployment| Kindly Check")
+		return []byte(encodedVal)
+	}
+	return decodeVal
+}
+
 `, packageName) + obj.getMasterFxn(fxnCreated, true) + obj.getMasterFxn(fxnCreated, false) + allFxn
 	mainfxn := `
 	func main(){

@@ -150,7 +150,8 @@ func (obj *JsonStringConverter) formatTypeVal(objType string, objVal string, tab
 		objVal = objVal[1 : len(objVal)-1] // Removing the double quotes from the objVal (because we need int)
 		return fmt.Sprintf("%s(%s)", objType, objVal)
 	} else if objType == "[]uint8" || objType == "[]byte" {
-		return fmt.Sprintf("%s(%s)", objType, objVal)
+		// Generally []uint8 is only used for secret
+		return fmt.Sprintf("getDataForSecret(%s)", objVal)
 	}
 	// Special Data-Types area Ends
 
@@ -307,12 +308,16 @@ func (obj *JsonStringConverter) traverseJson(v reflect.Value, curObjType string,
 		logrus.Debug(repeat("\t", tabs), v.String())
 		data := v.String()
 		if strings.Contains(data, "\n") {
+			return handleMultiLineStrings(data)
 			// New Lines Are now handled fmt.Sprint
-			// Since now The string goes under ``, therefore we don't need to replace /" with ",
+			// Since now The string goes under ``, therefore we don't need to replace \" with ", and \\ with \,
 			// So, reverting the change that is currently being done in runtimetojson
-			data = strings.ReplaceAll(data, "\\\"", "\"") // Replacing String containing /" with "
-			data = fmt.Sprintf("fmt.Sprint(`%s`)", data)
-			return data
+			// data = strings.ReplaceAll(data, "\\\\", "\\") // Replacing String containing \\ with \
+			// data = strings.ReplaceAll(data, "\\\"", "\"") // Replacing String containing \" with "
+			// // But now `` comes with its own problem, Handling backquote in a backquoted string
+			// data = strings.ReplaceAll(data, "`", "` + \"`\" + `") // Replacing String containing ` with ` + "`" + '
+			// data = fmt.Sprintf("fmt.Sprint(`%s`)", data)
+			// return data
 		}
 		return "\"" + data + "\"" // Need to return the output with double quotes, " --> /"
 

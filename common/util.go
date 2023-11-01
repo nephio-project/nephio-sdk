@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 )
 
 /*
@@ -55,4 +56,19 @@ func RecursiveListYamls(curFolder string) (yamlfiles []string) {
 		}
 	}
 	return
+}
+
+func handleMultiLineStrings(input string) string {
+	/* There are different ways to handle Multi-Line-Strings
+	Method-1: Usage of "Str1" + "Str2"
+	Replacing "\n" with `\n " + \n "`
+	"Str1\nStr2" :
+					Str1\n" +
+					"Str2
+	*/
+	input = strings.ReplaceAll(input, "\n", "\\n\" + \n \"")
+	return "\"" + input + "\""
+
+	// Method-2: Usage of `` for Raw-String Literal: To be Decided if Method 1 has any limitations
+
 }

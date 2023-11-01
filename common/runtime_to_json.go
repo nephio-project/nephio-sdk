@@ -100,8 +100,10 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 		if data == "" { // "" is considered to be default value, Therefore, Omitting it
 			return nil
 		}
-
-		data = strings.ReplaceAll(data, "\"", "\\\"") // Replacing String containing " with /"
+		// Todo: Need much better handling to strings, Since Different combinations can lead to bad-buggy results
+		// Below Additional Replace helps in building integrity of the "" string
+		data = strings.ReplaceAll(data, "\\", "\\\\") // Replacing String containing \ with \\
+		data = strings.ReplaceAll(data, "\"", "\\\"") // Replacing String containing " with \"
 		return data
 
 	case reflect.Slice:
@@ -193,8 +195,8 @@ Example:
 */
 func (obj *RuntimeJsonConverter) Convert(runtimeObj runtime.Object, gvk schema.GroupVersionKind) error {
 	if gvk.Version != "v1" {
-		logrus.Error("Currently Only Api-Version v1 is supported (Skipping)")
-		return fmt.Errorf("currently only Api-version v1 is supported")
+		logrus.Error("Currently Only Api-Version v1 is supported (Skipping)| Given Version " + gvk.Version)
+		return fmt.Errorf("currently only Api-version v1 is supported| Given Version " + gvk.Version)
 	}
 	logrus.Debug("----------------------------------Your Runtime Object--------------------\n", runtimeObj)
 	logrus.Debug("----------------------------------Your Runtime Object Ends--------------------\n")

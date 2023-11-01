@@ -63,8 +63,9 @@ func (obj *UnstructStringConverter) runDfsUnstruct(v reflect.Value, tabs int) st
 
 		if strings.Contains(data, "\n") {
 			// New Lines Are now handled fmt.Sprint
-			data = fmt.Sprintf("fmt.Sprint(`%s`)", data)
-			return data
+			// data = strings.ReplaceAll(data, "`", "` + \"`\" + `") // Replacing String containing ` with ` + "`" + '
+			// data = fmt.Sprintf("fmt.Sprint(`%s`)", data)
+			return handleMultiLineStrings(data)
 		}
 		data = strings.ReplaceAll(data, "\"", "\\\"") // Need to preserve double quotes, therefore preserving by adding a backslash (" --> /")
 		return "\"" + data + "\""                     // Sending with double quotes
