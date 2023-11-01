@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubectl/pkg/scheme"
@@ -31,7 +32,7 @@ import (
 var runtimeJsonConverterObj = RuntimeJsonConverter{}
 
 /*
-It Tests the Full-Flow From Runtime-Obj to Json
+It Tests the Full-Flow From Runtime-Obj to Json then StringConvert
 And Also Test For Combined-Cases (Struct-in-a-Struct, Slice-in-a-Struct, Struct-in-a-Slice) & so-on
 */
 func TestConvert(t *testing.T) {
@@ -59,6 +60,29 @@ func TestConvert(t *testing.T) {
 	json.Unmarshal([]byte(expectedData), &expected)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("Result Doesn't Matches with Expected| Kindly Check |\n ResultFile %s \t| ExpectedFile %s\n", resultFile, expectedFile)
+	}
+	// ----------------- Testing for JSON to GoCode --------------------------
+	var jsonStringConverterObj = JsonStringConverter{}
+	ll, _ := logrus.ParseLevel("fatal")
+	logrus.SetLevel(ll)
+
+	moduleStructMappingFile := "../config/struct_module_mapping.json"
+	jsonStringConverterObj.setModStructMapping(moduleStructMappingFile)
+	if len(jsonStringConverterObj.globalStructMapping) == 0 {
+		t.Errorf("Intialise Failed| Unable to Populate Global-Struct-Mapping From Config-File %s", moduleStructMappingFile)
+	}
+
+	enumModuleMapping := "../config/enum_module_mapping.json"
+	jsonStringConverterObj.setEnums(enumModuleMapping)
+	if jsonStringConverterObj.globalEnumsSet.Size() == 0 {
+		t.Errorf("Intialise Failed| Unable to Populate Enum-Module-Mapping From Config-File %s", enumModuleMapping)
+	}
+	gocode, err := jsonStringConverterObj.Convert(*gvk)
+	if err != nil {
+		t.Errorf("Error encountered while converting json to gocode | Error %v", err)
+	}
+	if gocode == "" {
+		t.Error("Empty Go-Code returned While Converting json to gocode-string")
 	}
 	os.RemoveAll("temp")
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -116,6 +117,7 @@ func (r *YourKindReconciler)DeleteAll(){
 }
 
 func TestGenerate(t *testing.T) {
+	goFileObj.FileContent = ""
 	input := map[string][]string{
 		"Deployment": {"appsv1.Deployment{struct_attributes...}"},
 	}
@@ -123,4 +125,23 @@ func TestGenerate(t *testing.T) {
 	if goFileObj.FileContent == "" {
 		t.Errorf("Generate GoCode Failed| Unable to Generate Go-File from Go-Code")
 	}
+}
+
+func TestGenerateWithEmptyNamespace(t *testing.T) {
+	goFileObj.FileContent = ""
+	goFileObj.Namespace = ""
+	input := map[string][]string{
+		"Deployment": {"appsv1.Deployment{struct_attributes...}"},
+	}
+	goFileObj.Generate(input)
+	if goFileObj.FileContent == "" {
+		t.Errorf("Generate GoCode Failed| Unable to Generate Go-File from Go-Code")
+	}
+}
+func TestWriteToFile(t *testing.T) {
+	goFileObj.WriteToFile()
+	if _, err := os.Stat("outputs/generated_code.go"); err != nil {
+		t.Errorf("Generated_code.go File doesn't exist| Failing this test")
+	}
+	os.RemoveAll("outputs")
 }

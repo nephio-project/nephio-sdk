@@ -50,15 +50,20 @@ unit_clean: ## clean up the unit test artifacts created
 ifeq ($(CONTAINER_RUNNABLE), 0)
 		$(CONTAINER_RUNTIME) system prune -f
 endif
-		rm ${TEST_COVERAGE_FILE} ${TEST_COVERAGE_HTML_FILE} ${TEST_COVERAGE_FUNC_FILE} > /dev/null 2>&1
+		# rm ${TEST_COVERAGE_FILE} ${TEST_COVERAGE_HTML_FILE} ${TEST_COVERAGE_FUNC_FILE} > /dev/null 2>&1
+		rm -f ${TEST_COVERAGE_FILE} ${TEST_COVERAGE_HTML_FILE} ${TEST_COVERAGE_FUNC_FILE}
 
 .PHONY: unit
-unit: ## Run unit tests against code.
+unit: ## Run unit tests against code. Installing Helm also as a pre-requisite
 ifeq ($(CONTAINER_RUNNABLE), 0)
 		$(CONTAINER_RUNTIME) run -it -v ${PWD}:/go/src -w /go/src docker.io/library/golang:${GO_VERSION}-alpine3.17 \
-         /bin/sh -c "go test ./... -v -coverprofile ${TEST_COVERAGE_FILE}; \
-         go tool cover -html=${TEST_COVERAGE_FILE} -o ${TEST_COVERAGE_HTML_FILE}; \
-         go tool cover -func=${TEST_COVERAGE_FILE} -o ${TEST_COVERAGE_FUNC_FILE}"
+         /bin/sh -c "wget https://get.helm.sh/helm-v3.9.3-linux-amd64.tar.gz; \
+		tar xvf helm-v3.9.3-linux-amd64.tar.gz; \
+		mv linux-amd64/helm /usr/local/bin; \
+		rm -rf linux-amd64 helm-v3.9.3-linux-amd64.tar.gz; \
+		go test ./... -v -coverprofile ${TEST_COVERAGE_FILE}; \
+		go tool cover -html=${TEST_COVERAGE_FILE} -o ${TEST_COVERAGE_HTML_FILE}; \
+		go tool cover -func=${TEST_COVERAGE_FILE} -o ${TEST_COVERAGE_FUNC_FILE}"
 else
 		go test ./... -v -coverprofile ${TEST_COVERAGE_FILE}
 		go tool cover -html=${TEST_COVERAGE_FILE} -o ${TEST_COVERAGE_HTML_FILE}

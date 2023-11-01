@@ -35,9 +35,10 @@ Runs the bash command "helm template <chartpath> --namespace <namespace> --outpu
 Todo: Increase the functionality to handle remote helm charts, and support for using different values.yaml & so on
 */
 func (obj *HelmYamlConvertor) ConvertHelmToYaml() error {
-	logrus.Info(obj.Namespace, obj.Chartpath)
+	logrus.Info(obj.Namespace, " ", obj.Chartpath)
 	logrus.Info(" ----------------- Converting Helm to Yaml --------------------------")
-	createDirIfDontExist("temp")
+	_ = createDirIfDontExist("temp")
+	// logrus.Info(err)
 	if obj.Namespace == "" {
 		obj.Namespace = "default"
 	}

@@ -25,10 +25,3 @@ limitations under the License.
 4: To check if converting from helm to yaml by helm-go client is feasible or not, since it will eliminate Helm as prerequiste for the script
 
 5: Extending The Support For Enum-pointers (Example: PreemptionPolicy attribute in schedulingv1.PriorityClass)
-
----------- TMP Branch Text ---------------------
-It should only come in new branch!
-Object Oriented Design:
-Global Variables and Variables that were getting passing from one fxn to another are made private attributes of struct
-Attributes that can be set by user are made Public
-Every Common Package File (except util.go), represents a struct (class) with its own methods

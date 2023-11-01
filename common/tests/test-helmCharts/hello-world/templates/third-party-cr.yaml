@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ThirdPartyCR
+metadata:
+  name: my-cr
+  namespace: default
+spec:
+  abc: def
+  slice:
+  - name: bde
+  - name: hello
+  - name: 5
