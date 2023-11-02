@@ -1,0 +1,125 @@
+{
+    "ObjectMeta": {
+        "type": "v1.ObjectMeta",
+        "val": {
+            "Labels": {
+                "type": "map[string]string",
+                "val": {
+                    "app": "nginx"
+                }
+            },
+            "Name": {
+                "type": "string",
+                "val": "my-nginx"
+            }
+        }
+    },
+    "Spec": {
+        "type": "v1.DeploymentSpec",
+        "val": {
+            "Paused": {
+                "type": "bool",
+                "val": false
+            },
+            "Replicas": {
+                "type": "*int32",
+                "val": "2"
+            },
+            "Selector": {
+                "type": "*v1.LabelSelector",
+                "val": {
+                    "MatchLabels": {
+                        "type": "map[string]string",
+                        "val": {
+                            "app": "nginx"
+                        }
+                    }
+                }
+            },
+            "Template": {
+                "type": "v1.PodTemplateSpec",
+                "val": {
+                    "ObjectMeta": {
+                        "type": "v1.ObjectMeta",
+                        "val": {
+                            "Labels": {
+                                "type": "map[string]string",
+                                "val": {
+                                    "app": "nginx"
+                                }
+                            }
+                        }
+                    },
+                    "Spec": {
+                        "type": "v1.PodSpec",
+                        "val": {
+                            "Containers": {
+                                "type": "[]v1.Container",
+                                "val": [
+                                    {
+                                        "Image": {
+                                            "type": "string",
+                                            "val": "nginx:1.14.2"
+                                        },
+                                        "Name": {
+                                            "type": "string",
+                                            "val": "nginx"
+                                        },
+                                        "Ports": {
+                                            "type": "[]v1.ContainerPort",
+                                            "val": [
+                                                {
+                                                    "ContainerPort": {
+                                                        "type": "int32",
+                                                        "val": "80"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "Stdin": {
+                                            "type": "bool",
+                                            "val": false
+                                        },
+                                        "StdinOnce": {
+                                            "type": "bool",
+                                            "val": false
+                                        },
+                                        "TTY": {
+                                            "type": "bool",
+                                            "val": false
+                                        }
+                                    }
+                                ]
+                            },
+                            "HostIPC": {
+                                "type": "bool",
+                                "val": false
+                            },
+                            "HostNetwork": {
+                                "type": "bool",
+                                "val": false
+                            },
+                            "HostPID": {
+                                "type": "bool",
+                                "val": false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "TypeMeta": {
+        "type": "v1.TypeMeta",
+        "val": {
+            "APIVersion": {
+                "type": "string",
+                "val": "apps/v1"
+            },
+            "Kind": {
+                "type": "string",
+                "val": "Deployment"
+            }
+        }
+    }
+}
