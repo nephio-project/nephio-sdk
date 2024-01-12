@@ -39,37 +39,52 @@ type JsonStringConverter struct {
 	generatedGoCode     string            // To be set by jsonToGoCode Function
 }
 
+func getCorrespondingOpening(closingBrackect rune) rune {
+	switch closingBrackect {
+	case '}':
+		return '{'
+	case ')':
+		return '('
+	case ']':
+		return '['
+	}
+	logrus.Error("Invalid closingBracket ", closingBrackect)
+	return ' '
+}
+
 func (obj *JsonStringConverter) checkOpeningAndClosingBraces() bool {
-	s := stack.New[int]()
+	s := stack.New[rune]()
 	lineCount := 0
-	opCount, closeCount := 0, 0
 	stringDetected := false
-	for i := 0; i < len(obj.generatedGoCode); i++ {
-		if obj.generatedGoCode[i] == '\n' {
+	for _, c := range obj.generatedGoCode {
+		if c == '\n' {
 			lineCount++
 		}
-		if obj.generatedGoCode[i] == '"' {
-			// If Enters in double quotes (string) Don't Check For opening/Closing Braces
+		if c == '"' {
+			// If Enters in double quotes (string) Don't Check For opening/Closing Braces (because within a string, it's user input which may or may-not be consistent with opening-closing {})
 			stringDetected = !stringDetected
 		}
 		if !stringDetected {
-			if obj.generatedGoCode[i] == '{' {
-				s.Push('{')
-				opCount++
-			} else if obj.generatedGoCode[i] == '}' {
-				closeCount++
+			switch c {
+			case '{', '(', '[':
+				s.Push(c)
+			case '}', ')', ']':
+				openingBracket := getCorrespondingOpening(c)
 				if s.Empty() {
-					logrus.Error("Closing Brace has no Opening Brace| Linenumber ", lineCount)
+					logrus.Errorf("Closing Brace %c has no Opening Brace| Linenumber %d", c, lineCount)
 					return false
 				} else {
-					s.Pop()
+					if openingBracket == s.Top() {
+						s.Pop()
+					} else {
+						logrus.Errorf("Invalid arrangement of brackets detected for %c at Linenumber %d", c, lineCount)
+						return false
+					}
 				}
 			}
 		}
 
 	}
-
-	logrus.Debugf("Test Summary| Opening Brace Count %d | Closing Brace Count %d| \n", opCount, closeCount)
 	for !s.Empty() {
 		logrus.Error("Extra Opening Braces Found at the End ")
 		return false

@@ -1,6 +1,6 @@
 module helm_to_controller/packages
 
-go 1.19
+go 1.21
 
 require (
 	github.com/liyue201/gostl v1.2.0

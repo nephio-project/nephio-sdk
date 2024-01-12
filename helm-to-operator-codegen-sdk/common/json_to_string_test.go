@@ -45,8 +45,10 @@ func TestIntialise(t *testing.T) {
 
 func TestCheckOpeningAndClosingBraces(t *testing.T) {
 	tests := []Tests{
-		{"{{}}{}", true},
+		{"{()}[]", true},
 		{"{{}}}", false},
+		{"{([)}", false},
+		{"(", false},
 	}
 
 	for _, test := range tests {
