@@ -19,11 +19,11 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/liyue201/gostl/ds/set"
@@ -177,28 +177,27 @@ Example	objType	objVal		Format_Val(Out)
 */
 func (obj *JsonStringConverter) formatTypeVal(objType string, objVal string, tabCount int) string {
 	// Special Data-Types are Handled Here
-	if objType == "intstr.Type" {
+	switch objType {
+	case "intstr.Type":
 		/*intstr.Type need to be handled explictly: intstr.Type is a int enum*/
 		objVal = objVal[1 : len(objVal)-1] // Removing the double quotes from the objVal (because we need int)
 		return fmt.Sprintf("%s(%s)", objType, objVal)
-	} else if objType == "[]uint8" || objType == "[]byte" {
+	case "[]uint8", "[]byte":
 		// Generally []uint8 is only used for secret
 		return fmt.Sprintf("getDataForSecret(%s)", objVal)
 	}
 	// Special Data-Types area Ends
-
-	pointerType := false
-	if objType[0] == '*' {
-		pointerType = true
-	} else if objType[0] == '&' {
-		log.Fatal(fmt.Errorf("& Types are not supported yet"))
+	if strings.HasPrefix(objType, "&") {
+		logrus.Fatal(fmt.Errorf("& Types are not supported yet"))
 	}
 
+	afterObjType, pointerType := strings.CutPrefix(objType, "*")
 	if pointerType {
-		switch objType[1:] {
+		switch afterObjType {
 		// You can find the defination of func boolPtr, int32Ptr, int64Ptr, intPtr, int16Ptr in the string_to_gocode.go
+		// TODO:= to use "k8s.io/utils/pointer" library
 		case "int", "int16", "int32", "int64":
-			return fmt.Sprintf("%sPtr(%s)", objType[1:], objVal[1:len(objVal)-1])
+			return fmt.Sprintf("%sPtr(%s)", afterObjType, objVal[1:len(objVal)-1])
 		case "bool":
 			return fmt.Sprintf("boolPtr(%s)", objVal)
 		case "string":
@@ -218,7 +217,7 @@ func (obj *JsonStringConverter) formatTypeVal(objType string, objVal string, tab
 	// It will reach here If It is a Composite Literal i.e. Struct OR a Enum
 	// Step-1: If type contains v1 --> Needs to change with corresponding modules using the globalStructMapping
 	if pointerType {
-		objType = "&" + objType[1:] //Converting pointer to address
+		objType = "&" + afterObjType //Converting pointer to address
 	}
 	re := regexp.MustCompile(`v1.`)
 	index := re.FindStringIndex(objType)
@@ -238,7 +237,7 @@ func (obj *JsonStringConverter) formatTypeVal(objType string, objVal string, tab
 			Enum are intialised using () where Structs are intialised using {}
 			Therefore, Need to Handle Separatly
 		*/
-		if obj.globalEnumsSet.Contains(curStruct) && objType[:2] != "[]" { // List of enums([]enumtype) are also Intailised as Structs using {}
+		if obj.globalEnumsSet.Contains(curStruct) && !strings.HasPrefix(objType, "[]") { // List of enums([]enumtype) are also Intailised as Structs using {}
 			return fmt.Sprintf("%s(%s)", objTypeWithModule, objVal) // Replacing {} with (), For Enums
 		} else {
 			return fmt.Sprintf("%s{\n%s\n%s}", objTypeWithModule, objVal, repeat("\t", tabCount))
@@ -259,11 +258,11 @@ func (obj *JsonStringConverter) traverseJson(v reflect.Value, curObjType string,
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
 		inter_str := "\n"
-		objType := curObjType[2:] // Removing the []
+		sliceItemObjType, _ := strings.CutPrefix(curObjType, "[]") // If the kind is Slice/Array then it should always has [] prefix
 		for i := 0; i < v.Len(); i++ {
 			// Run DFS Over each iterations of slice and capture the backtrack-values
-			backtrackVal := obj.traverseJson(v.Index(i), objType, tabs+1)
-			inter_str += repeat("\t", tabs) + obj.formatTypeVal(objType, backtrackVal, tabs)
+			backtrackVal := obj.traverseJson(v.Index(i), sliceItemObjType, tabs+1)
+			inter_str += repeat("\t", tabs) + obj.formatTypeVal(sliceItemObjType, backtrackVal, tabs)
 			inter_str += ",\n" // Add a Comma plus a New Line after every value
 		}
 		/*
@@ -346,7 +345,7 @@ func (obj *JsonStringConverter) traverseJson(v reflect.Value, curObjType string,
 
 	case reflect.Bool:
 		logrus.Debug(repeat("\t", tabs), v.Bool())
-		return fmt.Sprint(v.Bool()) // Return string version of bool
+		return strconv.FormatBool(v.Bool()) // Return string version of bool
 
 	default:
 		logrus.Fatal("Unsupported Kind For Json-String DFS Traversal|  ", v.Kind())
@@ -363,7 +362,8 @@ func (obj *JsonStringConverter) jsonToGoCode(inputFilepath string) {
 	var data map[string]interface{}
 	err := json.Unmarshal(plan, &data)
 	if err != nil {
-		fmt.Println("Cannot unmarshal the json ", err)
+		logrus.Error("Cannot unmarshal the json ", err)
+		return
 	}
 	logrus.Debug("Json Data", data)
 	obj.generatedGoCode = obj.traverseJson(reflect.ValueOf(data), "", 2)

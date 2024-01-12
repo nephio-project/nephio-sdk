@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -76,20 +77,23 @@ func (obj *UnstructStringConverter) runDfsUnstruct(v reflect.Value, tabs int) st
 		return fmt.Sprintf("map[string]interface{}{\n%s\n%s}", out, repeat("\t", tabs))
 	case reflect.String:
 		data := v.String()
-
+		// Todo: Need much better handling to strings, Since Different combinations can lead to bad-buggy results
+		// Below Additional Replace helps in building integrity of the "" string
+		data = strings.ReplaceAll(data, "\\", "\\\\") // Replacing String containing \ with \\
+		data = strings.ReplaceAll(data, "\"", "\\\"") // Replacing String containing " with \"
 		if strings.Contains(data, "\n") {
-			// New Lines Are now handled fmt.Sprint
-			// data = strings.ReplaceAll(data, "`", "` + \"`\" + `") // Replacing String containing ` with ` + "`" + '
-			// data = fmt.Sprintf("fmt.Sprint(`%s`)", data)
 			return handleMultiLineStrings(data)
 		}
-		data = strings.ReplaceAll(data, "\"", "\\\"") // Need to preserve double quotes, therefore preserving by adding a backslash (" --> /")
-		return "\"" + data + "\""                     // Sending with double quotes
+		return "\"" + data + "\"" // Sending with double quotes
 
 	case reflect.Bool:
-		return fmt.Sprint(v.Bool()) // Return the Bool value as String
-	case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int64:
-		return fmt.Sprint(v) // Return the Int, Float value as String
+		return strconv.FormatBool(v.Bool()) // Return the Bool value as String
+	case reflect.Int, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int64:
+		return strconv.Itoa(int(v.Int())) // Return the Int value as String
+	case reflect.Float32:
+		return strconv.FormatFloat(v.Float(), 'f', -1, 32) // Return the float32 value as string
+	case reflect.Float64:
+		return strconv.FormatFloat(v.Float(), 'f', -1, 64) // Returns the float64 value as string
 	default:
 		logrus.Error("Current Type is Not Supported in Unstruct-To-String| ", v.Kind())
 

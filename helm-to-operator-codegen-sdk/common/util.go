@@ -63,12 +63,9 @@ func RecursiveListYamls(curFolder string) (yamlfiles []string) {
 			yamlfiles = append(yamlfiles, returnedYamlFiles...)
 		} else {
 			fileName := files.Name()
-			if len(fileName) > 5 {
-				if fileName[len(fileName)-5:] == ".yaml" {
-					yamlfiles = append(yamlfiles, curFolder+"/"+fileName)
-				}
+			if strings.HasSuffix(fileName, ".yaml") {
+				yamlfiles = append(yamlfiles, curFolder+"/"+fileName)
 			}
-
 		}
 	}
 	return

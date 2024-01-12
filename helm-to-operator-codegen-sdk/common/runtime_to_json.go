@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -47,7 +48,7 @@ The DFS Algorithm would traverse all the nodes, but will not return empty fields
 func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs int) interface{} {
 
 	// Handling Special Cases, When We can't move further because of Private Attributes
-	if fmt.Sprint(reflect.TypeOf(curObj)) == "resource.Quantity" {
+	if reflect.TypeOf(curObj).String() == "resource.Quantity" {
 		res := curObj.(resource.Quantity)
 		resourceVal := res.String()
 		if resourceVal == "0" {
@@ -55,7 +56,7 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 		}
 		// Hack: type is changed to int, because we don't want the value in double quote when converting it to string
 		return map[string]string{"type": "int", "val": fmt.Sprintf("resource.MustParse(\"%s\")", resourceVal)}
-	} else if fmt.Sprint(reflect.TypeOf(curObj)) == "v1.Time" {
+	} else if reflect.TypeOf(curObj).String() == "v1.Time" {
 		/*
 			Since the attributes of v1.Time struct are private, Therefore we need to send back the value using GoString() method
 		*/
@@ -90,27 +91,36 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 			// Run DFS over the attributes (Fields) of current Struct
 			backtrackVal := obj.runDfsJsonOmitEmpty(objRef.Field(i).Interface(), tabs+1)
 			if backtrackVal != nil {
-				inter["type"] = fmt.Sprint(objRef.Type().Field(i).Type) // Type of i'th Field
-				inter["val"] = backtrackVal                             // Backtracked/Actual Value of i'th Field
-				out[objRef.Type().Field(i).Name] = inter                // Save the (Type and Value of i'th Field) with key as i'th Field Name
+				inter["type"] = objRef.Type().Field(i).Type.String() // Type of i'th Field
+				inter["val"] = backtrackVal                          // Backtracked/Actual Value of i'th Field
+				out[objRef.Type().Field(i).Name] = inter             // Save the (Type and Value of i'th Field) with key as i'th Field Name
 			}
 		}
 		if len(out) == 0 {
 			return nil
 		}
 		return out
-
-	case reflect.Float32, reflect.Float64, reflect.Int, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int64:
-		data := fmt.Sprint(objRef) // Converts the Obj Val to String Val
-		if data == "0" {           // 0 is considered to be default value, Therefore, Omitting it
+	case reflect.Int, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int64:
+		data := strconv.Itoa(int(objRef.Int()))
+		if data == "0" { // 0 is considered to be default value, Therefore, Omitting it
 			return nil
 		}
 		return data
-
+	case reflect.Float32:
+		data := strconv.FormatFloat(objRef.Float(), 'f', -1, 32) // Converts the Obj Val to String Val
+		if data == "0" {                                         // 0 is considered to be default value, Therefore, Omitting it
+			return nil
+		}
+		return data
+	case reflect.Float64:
+		data := strconv.FormatFloat(objRef.Float(), 'f', -1, 64) // Converts the Obj Val to String Val
+		if data == "0" {                                         // 0 is considered to be default value, Therefore, Omitting it
+			return nil
+		}
+		return data
 	case reflect.Bool:
 		data := objRef.Bool()
 		return data
-
 	case reflect.String:
 		data := objRef.String()
 		if data == "" { // "" is considered to be default value, Therefore, Omitting it
@@ -121,16 +131,15 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 		data = strings.ReplaceAll(data, "\\", "\\\\") // Replacing String containing \ with \\
 		data = strings.ReplaceAll(data, "\"", "\\\"") // Replacing String containing " with \"
 		return data
-
 	case reflect.Slice:
 		var out []interface{}
 		if objRef.Len() == 0 {
 			return nil
 		}
-		sliceElementType := objRef.Index(0).Type()
+		sliceElementType := objRef.Index(0).Type().String()
 		// Special Cases:
 		// Case 1: If The Slice represents a Byte, then its Element data-type would be uint8
-		if fmt.Sprint(sliceElementType) == "uint8" {
+		if sliceElementType == "uint8" {
 			// Assuming that the byte has come from Kind: Secret, So, we need to encode the string to base64, before writing in code
 			// Thought: You never write the actual value of secret in yaml, but the encoded versions of it, The same is happening below
 			// Todo: Finding out where []byte is used other than Secret, and if it also represent encoded version or actual string

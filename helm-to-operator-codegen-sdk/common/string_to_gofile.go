@@ -19,6 +19,7 @@ package common
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/liyue201/gostl/ds/set"
@@ -55,27 +56,29 @@ func (obj *GoFile) getRunnableFunction(resourceType string, resourceList []strin
 	}
 	fxnReturnType := ""
 	firstResource := resourceList[0]
-	for i := 0; i < len(firstResource); i++ {
-		if firstResource[i] == '{' {
+	for _, c := range firstResource {
+		if c == '{' {
 			break
-		} else if firstResource[i] != '\t' {
-			fxnReturnType += string(firstResource[i])
+		} else if c != '\t' {
+			fxnReturnType += string(c)
 		}
 	}
-	if fxnReturnType[0] == '&' {
-		fxnReturnType = "*" + fxnReturnType[1:]
+
+	afterFxnReturnType, pointerType := strings.CutPrefix(fxnReturnType, "&")
+	if pointerType {
+		fxnReturnType = "*" + afterFxnReturnType
 	}
 
 	varList := ""
 	varNamePrefix := fmt.Sprintf("%s%s", strings.ToLower(string(resourceType[0])), resourceType[1:]) // Service --> service
 	createdVars := ""
 	for i := 0; i < len(resourceList); i++ {
-		curVarName := varNamePrefix + fmt.Sprint(i+1)
+		curVarName := varNamePrefix + strconv.Itoa(i+1)
 		varList += fmt.Sprintf(`
 	%s := %s
 	
 		`, curVarName, resourceList[i])
-		createdVars += fmt.Sprintf("%s, ", curVarName)
+		createdVars += curVarName + ", "
 	}
 
 	fxn := fmt.Sprintf(`

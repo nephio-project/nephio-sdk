@@ -17,7 +17,6 @@ limitations under the License.
 package common
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -173,7 +172,7 @@ func TestTraverseJsonCompositeCases(t *testing.T) {
 
 	for _, test := range tests {
 		expected := test.expected.(string)
-		result := jsonStringConverterObj.traverseJson(reflect.ValueOf(test.input), fmt.Sprint(reflect.TypeOf(test.input)), 0)
+		result := jsonStringConverterObj.traverseJson(reflect.ValueOf(test.input), reflect.TypeOf(test.input).String(), 0)
 		if result != expected {
 			// compare2Strings(result, expected)
 			t.Errorf("TraverseJson Failed (Composite-Literal)| Input : Type %v \nExpected %s \t Got %s\n", test.input, expected, result)
