@@ -40,6 +40,25 @@ import (
 type RuntimeJsonConverter struct {
 }
 
+func (obj *RuntimeJsonConverter) refactorHelmLabels(labels map[string]interface{}) map[string]interface{} {
+	/*
+		According to helm-k8s docs:
+		Standard-Labels = [app.kubernetes.io/name, helm.sh/chart, app.kubernetes.io/managed-by, app.kubernetes.io/instance, app.kubernetes.io/component, app.kubernetes.io/part-of]
+		as of : https://helm.sh/docs/chart_best_practices/labels/
+		According to me:
+		Helm-Specific-Labels are: [helm.sh/chart, app.kubernetes.io/managed-by]
+		ToDo: to check above intution
+	*/
+	helmSpecificLabels := []string{"helm.sh/chart", "app.kubernetes.io/managed-by"}
+	for _, prohibitedLabels := range helmSpecificLabels {
+		_, ok := labels[prohibitedLabels]
+		if ok {
+			delete(labels, prohibitedLabels)
+		}
+	}
+	return labels
+}
+
 /*
 Recursive Function (DFS Algorithm) to traverse the object structure and identify data-types of various attributes
 If you see the Runtime-Object as a Hierachial Structure (Tree), then you say curObj would be the node of the tree/graph you are currently at
@@ -93,7 +112,11 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 			if backtrackVal != nil {
 				inter["type"] = objRef.Type().Field(i).Type.String() // Type of i'th Field
 				inter["val"] = backtrackVal                          // Backtracked/Actual Value of i'th Field
-				out[objRef.Type().Field(i).Name] = inter             // Save the (Type and Value of i'th Field) with key as i'th Field Name
+				attributeName := objRef.Type().Field(i).Name
+				if attributeName == "Labels" {
+					inter["val"] = obj.refactorHelmLabels(backtrackVal.(map[string]interface{}))
+				}
+				out[attributeName] = inter // Save the (Type and Value of i'th Field) with key as i'th Field Name
 			}
 		}
 		if len(out) == 0 {
