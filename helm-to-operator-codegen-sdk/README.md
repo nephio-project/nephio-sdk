@@ -1,9 +1,9 @@
 # helm-to-operator-codegen-sdk 
 ### Prerequisties:
-1. GoLang Version: 1.19
+1. GoLang Version: 1.21
 ```
-wget -c https://golang.org/dl/go1.19.8.linux-amd64.tar.gz
-sudo tar -C /usr/local -xvzf go1.19.8.linux-amd64.tar.gz
+wget -c https://golang.org/dl/go1.21.6.linux-amd64.tar.gz
+sudo tar -C /usr/local -xvzf go1.21.6.linux-amd64.tar.gz
 # Create Folder for Go Packages:
 mkdir go
 cd go
