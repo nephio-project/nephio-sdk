@@ -59,7 +59,7 @@ func TestRunDfsUnstructCompositeCases(t *testing.T) {
 
 func TestConvertUnstruct(t *testing.T) {
 	inputFilePath := "tests/test-yamls/deployment.yaml"
-	data, err := getFileContents(inputFilePath)
+	data, err := GetFileContents(inputFilePath)
 	if err != nil {
 		t.Errorf("Unable to Open file %s for Unstruct-Convert| Error %v", inputFilePath, err)
 	}

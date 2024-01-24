@@ -39,7 +39,7 @@ func TestConvert(t *testing.T) {
 	inputFile := "tests/test-yamls/deployment.yaml"
 
 	decoder := scheme.Codecs.UniversalDeserializer()
-	data, err := getFileContents(inputFile)
+	data, err := GetFileContents(inputFile)
 	if err != nil {
 		t.Errorf("Unable to Load File %s| Error %s", inputFile, err)
 	}
@@ -53,8 +53,8 @@ func TestConvert(t *testing.T) {
 	}
 	resultFile := "temp/temp.json"
 	expectedFile := "tests/expected-json/deployment.json"
-	resultData, _ := getFileContents(resultFile)
-	expectedData, _ := getFileContents(expectedFile)
+	resultData, _ := GetFileContents(resultFile)
+	expectedData, _ := GetFileContents(expectedFile)
 
 	var result any
 	var expected any

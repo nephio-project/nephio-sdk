@@ -17,12 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"helm_to_controller/packages/common"
-	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/liyue201/gostl/ds/set"
@@ -72,13 +69,7 @@ Output:
 	unstructGvkList: List of Group-Version-Kind for the unstructured objects of unstructObjList, mapped Index-wise
 */
 func handleSingleYaml(inputFilepath string) (runtimeObjList []runtime.Object, gvkList []schema.GroupVersionKind, unstructObjList []unstructured.Unstructured, unstructGvkList []schema.GroupVersionKind) {
-	file, err := os.Open(filepath.Clean(inputFilepath))
-	if err != nil {
-		logrus.Error("Error While Opening YAML file | ", inputFilepath, " \t |", err)
-		return
-	}
-	fp := bufio.NewReader(file)
-	data, err := io.ReadAll(fp)
+	data, err := common.GetFileContents(inputFilepath)
 	if err != nil {
 		logrus.Error("Error While Reading YAML file | ", inputFilepath, " \t |", err)
 		return
@@ -114,12 +105,8 @@ func handleSingleYaml(inputFilepath string) (runtimeObjList []runtime.Object, gv
 	return
 }
 
-func init() {
-	// Setting the Logrus Logging Level
-	// lvl := "debug"
-	lvl := "info"
-	// lvl = "error"
-	ll, err := logrus.ParseLevel(lvl)
+func setLogLevel(loggingLvl string) {
+	ll, err := logrus.ParseLevel(loggingLvl)
 	if err != nil {
 		ll = logrus.DebugLevel
 	}
@@ -136,6 +123,12 @@ func main() {
 	if len(cmdArgs) >= 2 {
 		namespace = cmdArgs[1]
 	}
+
+	loggingLvl := "info"
+	if len(cmdArgs) >= 3 {
+		loggingLvl = cmdArgs[2]
+	}
+	setLogLevel(loggingLvl)
 
 	var helmYamlConvertor = common.HelmYamlConvertor{Namespace: namespace, Chartpath: curHelmChart}
 	err := helmYamlConvertor.ConvertHelmToYaml()

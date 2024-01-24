@@ -35,7 +35,7 @@ type Tests struct {
 /*
 Reads the File from FilePath and returns the file-data
 */
-func getFileContents(inputFilePath string) ([]byte, error) {
+func GetFileContents(inputFilePath string) ([]byte, error) {
 	file, err := os.Open(filepath.Clean(inputFilePath))
 	if err != nil {
 		return nil, err
