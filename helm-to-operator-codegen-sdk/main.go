@@ -25,8 +25,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	// logging "github.com/op/go-logging"
-
 	"github.com/liyue201/gostl/ds/set"
 	"github.com/liyue201/gostl/utils/comparator"
 	"github.com/sirupsen/logrus"
@@ -50,7 +48,7 @@ func init() {
 }
 
 /*
-Convert the KRM Resources to *unstructured.Unstructured (map[string]interface{})
+Convert the KRM Resources to *unstructured.Unstructured (map[string]any)
 Returns the *unstructured.Unstructured Object, GroupVersionKind (gvk), error
 */
 func unstructuredDecode(data []byte) (*unstructured.Unstructured, *schema.GroupVersionKind, error) {
@@ -129,7 +127,6 @@ func init() {
 }
 
 func main() {
-	// curHelmChart := "testing_helpers/free5gc_helm_chart"
 	curHelmChart := "inputs"
 	cmdArgs := os.Args[1:]
 	if len(cmdArgs) != 0 {
@@ -160,8 +157,6 @@ func main() {
 	for _, yamlfile := range allYamlPaths {
 		logrus.Info("CurFile --> | ", yamlfile)
 		runtimeObjList, gvkList, unstructObjList, unstructGvkList := handleSingleYaml(yamlfile)
-		// _, _ = runtimeObjList, gvkList
-		// _, _ = unstructGvkList, unstructObjList
 		for i := 0; i < len(runtimeObjList); i++ {
 			logrus.Info(fmt.Sprintf(" Current KRM Resource| Kind : %s| YamlFilePath : %s", gvkList[i].Kind, yamlfile))
 			err := runtimeJsonConverterObj.Convert(runtimeObjList[i], gvkList[i])
@@ -182,8 +177,6 @@ func main() {
 
 		for i := 0; i < len(unstructObjList); i++ {
 			gocode := unstructStringConverterObj.Convert(unstructObjList[i])
-			// _ = unstructGvkList[i]
-			// gocodes["third_party_kinds"] = append(gocodes["third_party_kinds"], gocode)
 			gocodes[unstructGvkList[i].Kind] = append(gocodes[unstructGvkList[i].Kind], gocode)
 			logrus.Info("\t Converting Unstructured to String Completed ")
 		}

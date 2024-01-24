@@ -149,8 +149,8 @@ func TestTraverseJsonCompositeCases(t *testing.T) {
 `,
 		},
 		{
-			input: map[string]interface{}{
-				"Condition": map[string]interface{}{
+			input: map[string]any{
+				"Condition": map[string]any{
 					"type": "bool",
 					"val":  true,
 				},
@@ -158,10 +158,10 @@ func TestTraverseJsonCompositeCases(t *testing.T) {
 			expected: "Condition  : true, ",
 		},
 		{
-			input: map[string]interface{}{
-				"Labels": map[string]interface{}{
+			input: map[string]any{
+				"Labels": map[string]any{
 					"type": "map[string]string",
-					"val": map[string]interface{}{
+					"val": map[string]any{
 						"label1": "app1",
 					},
 				},

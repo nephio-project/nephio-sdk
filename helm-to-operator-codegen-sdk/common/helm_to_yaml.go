@@ -38,7 +38,6 @@ func (obj *HelmYamlConvertor) ConvertHelmToYaml() error {
 	logrus.Info(obj.Namespace, " ", obj.Chartpath)
 	logrus.Info(" ----------------- Converting Helm to Yaml --------------------------")
 	_ = createDirIfDontExist("temp")
-	// logrus.Info(err)
 	if obj.Namespace == "" {
 		obj.Namespace = "default"
 	}

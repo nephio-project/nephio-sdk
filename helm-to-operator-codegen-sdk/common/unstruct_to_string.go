@@ -48,7 +48,7 @@ func (obj *UnstructStringConverter) runDfsUnstruct(v reflect.Value, tabs int) st
 
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-		curSlice := v.Interface().([]interface{})
+		curSlice := v.Interface().([]any)
 		var outStr = ""
 		for _, sliceItem := range curSlice {
 			// Run DFS over all the iterations of Slice, and capture the backtrack value
@@ -59,11 +59,11 @@ func (obj *UnstructStringConverter) runDfsUnstruct(v reflect.Value, tabs int) st
 		if len(outStr) > 1 {
 			outStr = outStr[:len(outStr)-1] //Removing the Last \n
 		}
-		return fmt.Sprintf("[]interface{}{\n%s\n%s}", outStr, repeat("\t", tabs))
+		return fmt.Sprintf("[]any{\n%s\n%s}", outStr, repeat("\t", tabs))
 
 	case reflect.Map:
 		out := ""
-		curMap := v.Interface().(map[string]interface{})
+		curMap := v.Interface().(map[string]any)
 		for key, val := range curMap {
 			// Run DFS over all the Values of Map, and capture the backtrack value
 			backtackValues := obj.runDfsUnstruct(reflect.ValueOf(val), tabs+1)
@@ -74,7 +74,7 @@ func (obj *UnstructStringConverter) runDfsUnstruct(v reflect.Value, tabs int) st
 		if len(out) > 1 {
 			out = out[:len(out)-1] //Removing the Last \n
 		}
-		return fmt.Sprintf("map[string]interface{}{\n%s\n%s}", out, repeat("\t", tabs))
+		return fmt.Sprintf("map[string]any{\n%s\n%s}", out, repeat("\t", tabs))
 	case reflect.String:
 		data := v.String()
 		// Todo: Need much better handling to strings, Since Different combinations can lead to bad-buggy results

@@ -29,22 +29,22 @@ Composite Cases : Maps, Slices
 func TestRunDfsUnstructCompositeCases(t *testing.T) {
 	tests := []Tests{
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"Name": "ABC",
 			},
-			expected: "map[string]interface{}{\n\"Name\": \"ABC\",\n}",
+			expected: "map[string]any{\n\"Name\": \"ABC\",\n}",
 		},
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"Replicas": 4,
 			},
-			expected: "map[string]interface{}{\n\"Replicas\": 4,\n}",
+			expected: "map[string]any{\n\"Replicas\": 4,\n}",
 		},
 		{
-			input: map[string]interface{}{
-				"Conditions": []interface{}{true},
+			input: map[string]any{
+				"Conditions": []any{true},
 			},
-			expected: "map[string]interface{}{\n\"Conditions\": []interface{}{\n\ttrue,\n\t},\n}",
+			expected: "map[string]any{\n\"Conditions\": []any{\n\ttrue,\n\t},\n}",
 		},
 	}
 

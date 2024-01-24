@@ -43,14 +43,14 @@ e.g. go run main.go /home/ubuntu/free5gccharts/towards5gs-helm/charts/free5gc/ch
 Note: 
 1. If <path_to_local_helm_chart> is not provided, then by default it would take the helm_charts present in Input-folder.
 
-The generated Go-Code would be written in the "outputs/generated_code.go" file
+The generated Go-Code would be written to the "outputs/generated_code.go" file
 
-The Generated Go-Code would contain the following plugable function:
-1. Create_All(): It when called, create all the k8s resources(services, deployment) in the kubernetes cluster.
-2. Delete_All(): It when called, delete all the k8s resources(services, deployment) in the kubernetes cluster.
-3. Get_Resources(): would return the list of a particular resource.
-    1. Get_Service() would return the list of all Services-Objects.
-    2. Get_Deployment() would return the list of all Deployment-Objects. & so on
+The Generated Go-Code shall contain the following plugable functions:
+1. Create_All():  When called, it will create all the k8s resources(services, deployment) on the kubernetes cluster.
+2. Delete_All(): When called, it will delete all the k8s resources(services, deployment) on the kubernetes cluster.
+3. Get_Resources(): Shall return the list of a particular resource.
+    1. Get_Service(): Shall return the list of all services.
+    2. Get_Deployment(): Shall return the list of all deployments. & so on
 
 Further Docs:
 1. Design Document: [link](https://docs.google.com/document/d/1b7WpK_BHe7nRuGP5MOy6Mxf3hpN_cro9/edit)

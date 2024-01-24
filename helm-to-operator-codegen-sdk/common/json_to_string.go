@@ -112,7 +112,7 @@ func (obj *JsonStringConverter) setModStructMapping(inputFilepath string) {
 
 	out := map[string]string{}
 	plan, _ := os.ReadFile(filepath.Clean(inputFilepath))
-	var data map[string]interface{}
+	var data map[string]any
 	err := json.Unmarshal(plan, &data)
 	if err != nil {
 		logrus.Fatal("Cannot unmarshal the json For Struct Mapping | ", inputFilepath, "  Error | ", err)
@@ -121,7 +121,7 @@ func (obj *JsonStringConverter) setModStructMapping(inputFilepath string) {
 	// Validating Struct Mapping, Every Mapping value should contain unique values: pending
 	var validateSet = set.New[string](comparator.StringComparator, set.WithGoroutineSafe())
 	for _, structsList := range data {
-		for _, structName := range structsList.([]interface{}) {
+		for _, structName := range structsList.([]any) {
 			// ToDo: What to do when duplication is found, currently we are only logging
 			if validateSet.Contains(structName.(string)) {
 				logrus.Warn("Duplication Detected in Struct Mapping | For ", structName.(string))
@@ -133,7 +133,7 @@ func (obj *JsonStringConverter) setModStructMapping(inputFilepath string) {
 
 	// Saving to Global Map, so that it could be used by "formatTypeVal" function
 	for module, structs := range data {
-		for _, structName := range structs.([]interface{}) {
+		for _, structName := range structs.([]any) {
 			structNameStr := structName.(string)
 			out[structNameStr] = module
 		}
@@ -147,7 +147,7 @@ func (obj *JsonStringConverter) setModStructMapping(inputFilepath string) {
 */
 func (obj *JsonStringConverter) setEnums(inputFilepath string) {
 	fp, _ := os.ReadFile(filepath.Clean(inputFilepath))
-	var data map[string]interface{}
+	var data map[string]any
 	err := json.Unmarshal(fp, &data)
 	if err != nil {
 		logrus.Fatal("Cannot unmarshal the json For Enum-Mapping | ", inputFilepath, "  Error | ", err)
@@ -155,7 +155,7 @@ func (obj *JsonStringConverter) setEnums(inputFilepath string) {
 	var tempSet = set.New[string](comparator.StringComparator, set.WithGoroutineSafe())
 	// Saving to Global Enum Set, so that it could be used by "formatTypeVal" function
 	for _, enums := range data {
-		for _, val := range enums.([]interface{}) {
+		for _, val := range enums.([]any) {
 			enum := val.(string)
 			if tempSet.Contains(enum) {
 				// ToDo: What to do when duplication is found, currently we are only logging
@@ -278,7 +278,7 @@ func (obj *JsonStringConverter) traverseJson(v reflect.Value, curObjType string,
 		out := ""
 		for _, key := range v.MapKeys() {
 			// Here key represents the struct Attribute Name/ Field Name
-			objMap, _ := v.MapIndex(key).Interface().(map[string]interface{})
+			objMap, _ := v.MapIndex(key).Interface().(map[string]any)
 			logrus.Debug(repeat("\t", tabs), key)
 			objType := objMap["type"].(string) // objType represents the type of i'th attribute
 			logrus.Debug(repeat("\t", tabs) + objType)
@@ -291,7 +291,7 @@ func (obj *JsonStringConverter) traverseJson(v reflect.Value, curObjType string,
 				}
 				// Assuming the Key in Map is always string, map[string] --> 11 Characters
 				mapValuesType := objType[mapStartIndex+11:]
-				curMap := objVal.(map[string]interface{})
+				curMap := objVal.(map[string]any)
 
 				backTrackValues := ""
 				for curKey, curVal := range curMap {
@@ -359,7 +359,7 @@ Reads the temp.json created by runtime_to_json.go and traverse json(DFS Runner) 
 func (obj *JsonStringConverter) jsonToGoCode(inputFilepath string) {
 
 	plan, _ := os.ReadFile(filepath.Clean(inputFilepath))
-	var data map[string]interface{}
+	var data map[string]any
 	err := json.Unmarshal(plan, &data)
 	if err != nil {
 		logrus.Error("Cannot unmarshal the json ", err)

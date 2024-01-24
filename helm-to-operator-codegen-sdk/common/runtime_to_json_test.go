@@ -56,8 +56,8 @@ func TestConvert(t *testing.T) {
 	resultData, _ := getFileContents(resultFile)
 	expectedData, _ := getFileContents(expectedFile)
 
-	var result interface{}
-	var expected interface{}
+	var result any
+	var expected any
 	_ = json.Unmarshal([]byte(resultData), &result)
 	_ = json.Unmarshal([]byte(expectedData), &expected)
 	if !reflect.DeepEqual(result, expected) {
@@ -114,16 +114,16 @@ Tests For Complex Cases in DFS Traversal (Struct, Slices, Maps)
 */
 func TestRunDfsJsonOmitEmptyComplexCases(t *testing.T) {
 	tests := []Tests{
-		{[]string{"abc", "def", ""}, []interface{}{"abc", "def", ""}},
+		{[]string{"abc", "def", ""}, []any{"abc", "def", ""}},
 		{[]byte("my-secret"), "bXktc2VjcmV0"}, //Base64 encoded version of my-secret// This is also a TODO task (to check if it is important or not)
-		// {[]interface{}{0, "abc"}, []interface{}{"", "abc"}},// This is TODO Task
+		// {[]any{0, "abc"}, []any{"", "abc"}},// This is TODO Task
 		{metav1.ObjectMeta{}, nil}, //Empty Struct Should Return Nil
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"key1": "abc",
 				"key2": 6,
 			},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"key1": "abc",
 				"key2": "6",
 			},
@@ -133,12 +133,12 @@ func TestRunDfsJsonOmitEmptyComplexCases(t *testing.T) {
 				Name:       "tests",
 				Generation: 2,
 			},
-			expected: map[string]interface{}{
-				"Name": map[string]interface{}{
+			expected: map[string]any{
+				"Name": map[string]any{
 					"type": "string",
 					"val":  "tests",
 				},
-				"Generation": map[string]interface{}{
+				"Generation": map[string]any{
 					"type": "int64",
 					"val":  "2",
 				},
@@ -167,7 +167,7 @@ func TestRunDfsJsonOmitEmptySpecialCases(t *testing.T) {
 		},
 		{
 			input: metav1.Time{Time: time.Time.AddDate(time.Time{}, 2, 3, 0)},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"Time": map[string]string{
 					"type": "int",
 					"val":  time.Time.AddDate(time.Time{}, 2, 3, 0).GoString(),

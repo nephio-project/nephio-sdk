@@ -28,8 +28,8 @@ import (
 )
 
 type Tests struct {
-	input    interface{}
-	expected interface{}
+	input    any
+	expected any
 }
 
 /*
@@ -50,7 +50,7 @@ func getFileContents(inputFilePath string) ([]byte, error) {
 }
 
 /*
-Convert the KRM Resources to *unstructured.Unstructured (map[string]interface{})
+Convert the KRM Resources to *unstructured.Unstructured (map[string]any)
 Returns the *unstructured.Unstructured Object, GroupVersionKind (gvk), error
 */
 func unstructuredDecode(data []byte) (*unstructured.Unstructured, *schema.GroupVersionKind, error) {
@@ -63,17 +63,3 @@ func unstructuredDecode(data []byte) (*unstructured.Unstructured, *schema.GroupV
 	}
 	return obj, gvk, nil
 }
-
-// func compare2Strings(a string, b string) {
-
-// 	lenA, lenB := len(a), len(b)
-// 	fmt.Println(lenA, lenB)
-// 	minL := lenA
-// 	if lenB < lenA {
-// 		minL = lenB
-// 	}
-
-// 	for index := 0; index < minL; index++ {
-// 		fmt.Printf("%d %c %c\n", index, a[index], b[index])
-// 	}
-// }

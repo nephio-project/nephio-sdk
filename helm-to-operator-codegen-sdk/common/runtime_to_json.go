@@ -40,7 +40,7 @@ import (
 type RuntimeJsonConverter struct {
 }
 
-func (obj *RuntimeJsonConverter) refactorHelmLabels(labels map[string]interface{}) map[string]interface{} {
+func (obj *RuntimeJsonConverter) refactorHelmLabels(labels map[string]any) map[string]any {
 	/*
 		According to helm-k8s docs:
 		Standard-Labels = [app.kubernetes.io/name, helm.sh/chart, app.kubernetes.io/managed-by, app.kubernetes.io/instance, app.kubernetes.io/component, app.kubernetes.io/part-of]
@@ -64,7 +64,7 @@ Recursive Function (DFS Algorithm) to traverse the object structure and identify
 If you see the Runtime-Object as a Hierachial Structure (Tree), then you say curObj would be the node of the tree/graph you are currently at
 The DFS Algorithm would traverse all the nodes, but will not return empty fields
 */
-func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs int) interface{} {
+func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj any, tabs int) any {
 
 	// Handling Special Cases, When We can't move further because of Private Attributes
 	if reflect.TypeOf(curObj).String() == "resource.Quantity" {
@@ -85,7 +85,7 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 		if timeVar == defaultVal { //If The LHS is the Default Value, then omit it
 			return nil
 		} else {
-			var out = make(map[string]interface{})
+			var out = make(map[string]any)
 			timeVal := timeVar.GoString()
 			out["Time"] = map[string]string{"type": "int", "val": timeVal} // Hack: type is changed to int, because we don't want the value in double quote
 			return out
@@ -100,9 +100,9 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 
 	switch objRef.Kind() {
 	case reflect.Struct:
-		var out = make(map[string]interface{})
+		var out = make(map[string]any)
 		for i := 0; i < objRef.NumField(); i++ {
-			var inter = make(map[string]interface{})
+			var inter = make(map[string]any)
 			if !objRef.Field(i).CanInterface() {
 				logrus.Warn("Private Attributes are not visible to me ! Support Missing For || ", objRef.Type().Field(i).Name, objRef.Type().Field(i).Type)
 				continue
@@ -114,7 +114,7 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 				inter["val"] = backtrackVal                          // Backtracked/Actual Value of i'th Field
 				attributeName := objRef.Type().Field(i).Name
 				if attributeName == "Labels" {
-					inter["val"] = obj.refactorHelmLabels(backtrackVal.(map[string]interface{}))
+					inter["val"] = obj.refactorHelmLabels(backtrackVal.(map[string]any))
 				}
 				out[attributeName] = inter // Save the (Type and Value of i'th Field) with key as i'th Field Name
 			}
@@ -155,7 +155,7 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 		data = strings.ReplaceAll(data, "\"", "\\\"") // Replacing String containing " with \"
 		return data
 	case reflect.Slice:
-		var out []interface{}
+		var out []any
 		if objRef.Len() == 0 {
 			return nil
 		}
@@ -190,7 +190,7 @@ func (obj *RuntimeJsonConverter) runDfsJsonOmitEmpty(curObj interface{}, tabs in
 
 	case reflect.Map:
 		// Assumption : Key Value is Always String
-		var out = make(map[string]interface{})
+		var out = make(map[string]any)
 		switch objRef.Type().Key().Kind() {
 		case reflect.String:
 			for _, key := range objRef.MapKeys() {
@@ -248,7 +248,7 @@ func (obj *RuntimeJsonConverter) Convert(runtimeObj runtime.Object, gvk schema.G
 	}
 	logrus.Debug("----------------------------------Your Runtime Object--------------------\n", runtimeObj)
 	logrus.Debug("----------------------------------Your Runtime Object Ends--------------------\n")
-	var objMap interface{}
+	var objMap any
 	switch gvk.Kind {
 	case "Service":
 		curObj := runtimeObj.(*corev1.Service)
