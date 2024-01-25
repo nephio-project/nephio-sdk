@@ -1,47 +1,66 @@
-# helm-to-operator-codegen-sdk 
-### Prerequisties:
+# Helm to Operator Codegen Sdk
+The "Helm to Operator Codegen Sdk" takes the helm chart as input and generates the golang-code which can be used by kubernetes operator to create/delete all the resources previously managed by the helm charts. The sdk can be employed to transition from helm-way-of-deploying-resources to the operator way.
+
+Note: It is currently an experimental feature.
+
+### Step 0: Prerequisite
 1. GoLang Version: 1.21
-```
-wget -c https://golang.org/dl/go1.21.6.linux-amd64.tar.gz
-sudo tar -C /usr/local -xvzf go1.21.6.linux-amd64.tar.gz
-# Create Folder for Go Packages:
-mkdir go
-cd go
-mkdir pkg bin src
-
-# In order to add Go to environment: Append the following to "/etc/profile" file
-export  PATH=$PATH:/usr/local/go/bin
-export GOPATH="$HOME/go"
-export GOBIN="$GOPATH/bin"
-
-# Then, Apply the changes:
-source /etc/profile
-# Check The Installation
-go version
-```
-
-
-2. Helm :
-```
-wget https://get.helm.sh/helm-v3.9.3-linux-amd64.tar.gz
-tar xvf helm-v3.9.3-linux-amd64.tar.gz
-sudo mv linux-amd64/helm /usr/local/bin
-```
-
+2. Helm : v3.9.3
 3. Go Packages:
 ```
 # Clone the Repo
-cd nephio-sdk/
+cd nephio-sdk/helm-to-operator-codegen-sdk/
 go mod tidy
 ```
 
-### Running the Script
+### Step 1: Running the sdk
 ```
-go run main.go <path_to_local_helm_chart> <namespace>
-e.g. go run main.go /home/ubuntu/free5gccharts/towards5gs-helm/charts/free5gc/charts/free5gc-amf free5gcns
+go run main.go <path_to_local_helm_chart> <namespace> <logging-level>
 ```
-Note: 
-1. If <path_to_local_helm_chart> is not provided, then by default it would take the helm_charts present in Input-folder.
+Note:
+1. The logging-level can be set to one of the following values: debug, info (default), error, warn
+2. If <path_to_local_helm_chart> is not provided, then by default it would take the helm_charts present in Input-folder.
+
+#### Example Run 
+```
+go run main.go /home/ubuntu/free5gccharts/towards5gs-helm/charts/free5gc/charts/free5gc-amf/ free5gcns info
+```
+<details>
+<summary>The output is similar to:</summary>
+
+```console
+INFO[0000]  ----------------- Converting Helm to Yaml --------------------------
+WARN[0000] Duplication Detected in Struct Mapping | For Preconditions
+WARN[0000] Duplication Detected in Struct Mapping | For ConditionStatus
+WARN[0000] Duplication Detected in Enum Mapping | For ConditionStatus
+INFO[0000] CurFile --> | temp/templated/free5gc-amf/templates/amf-configmap.yaml
+INFO[0000]  Current KRM Resource| Kind : ConfigMap| YamlFilePath : temp/templated/free5gc-amf/templates/amf-configmap.yaml
+INFO[0000]       Converting Runtime to Json Completed
+INFO[0000]       Converting Json to String Completed
+INFO[0000] CurFile --> | temp/templated/free5gc-amf/templates/amf-deployment.yaml
+INFO[0000]  Current KRM Resource| Kind : Deployment| YamlFilePath : temp/templated/free5gc-amf/templates/amf-deployment.yaml
+INFO[0000]       Converting Runtime to Json Completed
+INFO[0000]       Converting Json to String Completed
+INFO[0000] CurFile --> | temp/templated/free5gc-amf/templates/amf-hpa.yaml
+ERRO[0000] Unable to convert yaml to unstructured |Object 'Kind' is missing in 'null'
+INFO[0000] CurFile --> | temp/templated/free5gc-amf/templates/amf-ingress.yaml
+ERRO[0000] Unable to convert yaml to unstructured |Object 'Kind' is missing in 'null'
+INFO[0000] CurFile --> | temp/templated/free5gc-amf/templates/amf-n2-nad.yaml
+INFO[0000] Kind | NetworkAttachmentDefinition Would Be Treated as Third Party Kind
+INFO[0000]       Converting Unstructured to String Completed
+INFO[0000] CurFile --> | temp/templated/free5gc-amf/templates/amf-service.yaml
+INFO[0000]  Current KRM Resource| Kind : Service| YamlFilePath : temp/templated/free5gc-amf/templates/amf-service.yaml
+INFO[0000]       Converting Runtime to Json Completed
+INFO[0000]       Converting Json to String Completed
+INFO[0000] ----------------- Writing GO Code ---------------------------------
+INFO[0000] ----------------- Program Run Successful| Summary ---------------------------------
+INFO[0000] Deployment            |1
+INFO[0000] NetworkAttachmentDefinition           |1
+INFO[0000] Service               |1
+INFO[0000] ConfigMap             |1
+```
+</details>
+
 
 The generated Go-Code would be written to the "outputs/generated_code.go" file
 
