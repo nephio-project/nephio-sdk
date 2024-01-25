@@ -24,4 +24,4 @@ limitations under the License.
 
 4: To check if converting from helm to yaml by helm-go client is feasible or not, since it will eliminate Helm as prerequiste for the script
 
-5: Extending The Support For Enum-pointers (Example: PreemptionPolicy attribute in schedulingv1.PriorityClass)
+5: Investigating the scope of "k8s.io/utils/ptr" library as an alternative of Int32Ptr, like fxns.

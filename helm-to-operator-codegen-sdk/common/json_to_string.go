@@ -238,6 +238,9 @@ func (obj *JsonStringConverter) formatTypeVal(objType string, objVal string, tab
 			Therefore, Need to Handle Separatly
 		*/
 		if obj.globalEnumsSet.Contains(curStruct) && !strings.HasPrefix(objType, "[]") { // List of enums([]enumtype) are also Intailised as Structs using {}
+			if pointerType {
+				return fmt.Sprintf("ptr.To(%s(%s))", objTypeWithModule[1:], objVal) // Using ptr.To for Enum-Pointers
+			}
 			return fmt.Sprintf("%s(%s)", objTypeWithModule, objVal) // Replacing {} with (), For Enums
 		} else {
 			return fmt.Sprintf("%s{\n%s\n%s}", objTypeWithModule, objVal, repeat("\t", tabCount))

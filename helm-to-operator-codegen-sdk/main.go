@@ -136,7 +136,6 @@ func main() {
 		logrus.Fatal("Unable to Convert Helm to Yamls| Error | ", err)
 	}
 	allYamlPaths := common.RecursiveListYamls("temp/templated")
-
 	// Intialising Convertor Structs/Classes
 	var jsonStringConverterObj = common.JsonStringConverter{}
 	jsonStringConverterObj.Intialise()

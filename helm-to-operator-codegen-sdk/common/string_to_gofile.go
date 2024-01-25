@@ -127,6 +127,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/utils/ptr"
 )
 
 func deleteMeAfterDeletingUnusedImportedModules() {
@@ -145,6 +146,7 @@ func deleteMeAfterDeletingUnusedImportedModules() {
 	_, _ = resource.ParseQuantity("")
 	_ = context.TODO()
 	_ = fmt.Sprintf("")
+	_ = ptr.To(32)
 }
 
 func int32Ptr(val int) *int32 {
@@ -264,18 +266,22 @@ func (obj *GoFile) getMasterFxn(fxnCreated []string, inCreatedState bool) string
 		}
 	}
 
+	namespaceVarStatement := ""
+	if obj.Namespace != "" {
+		namespaceVarStatement = fmt.Sprintf("namespaceProvided := \"%s\"", obj.Namespace)
+	}
 	outFxn := fmt.Sprintf(`
 /*
 // Before Uncommenting the following function, Make sure the data-type of r is same as of your Reconciler,
 // Replace "YourKindReconciler" with the type of your Reconciler
 func (r *YourKindReconciler)%sAll(){
  	var err error
-	namespaceProvided := "%s"
+	%s
 	%s
 }
 */
 
-	`, usage, obj.Namespace, fxnStatement)
+	`, usage, namespaceVarStatement, fxnStatement)
 	return outFxn
 }
 
